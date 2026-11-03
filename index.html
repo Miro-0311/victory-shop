@@ -545,20 +545,23 @@ ${itemsText}
 --------------------
 請幫我確認訂單，謝謝！`;
 
-    // 3. 進行 URL 編碼並導向 LINE 專用跳轉連結
+// 3. 進行 URL 編碼並導向 LINE 專用跳轉連結
     var encodedMessage = encodeURIComponent(message);
     var lineUrl = `https://line.me/R/msg/text/?${encodedMessage}`;
 
-    // 4. 恢復按鈕狀態並提示，使用 window.location.assign 確保順利導向
     btn.disabled = false;
     btn.innerText = "確認送出訂單";
 
-    // 彈出提示並導向 LINE
-    if (confirm("點擊「確定」將自動開啟 LINE 傳送訂單給店家！")) {
+    // 4. 使用更安全的開啟方式，並在被阻擋時直接提供連結
+    try {
+        var win = window.open(lineUrl, '_blank');
+        if (!win) {
+            window.location.href = lineUrl;
+        }
+    } catch (e) {
         window.location.href = lineUrl;
     }
-});
-</script>
+});</script>
 
 </body>
 </html>
