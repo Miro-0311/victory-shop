@@ -538,9 +538,9 @@
 🛒 訂單明細：
 ${itemsText}
 --------------------
-💰 商品小計：${subtotal}
-📦 運費：${shippingFee}
-💵 總金額：${totalAmount}
+💰 商品小計：$${subtotal}
+📦 運費：$${shippingFee}
+💵 總金額：$${totalAmount}
 📝 備註：${document.getElementById('note').value || '無'}
 --------------------
 請幫我確認訂單，謝謝！`;
@@ -549,8 +549,14 @@ ${itemsText}
     var encodedMessage = encodeURIComponent(message);
     var lineUrl = `https://line.me/R/msg/text/?${encodedMessage}`;
 
-    // 4. 跳轉至 LINE 應用程式發送訊息
-    window.location.href = lineUrl;
+    // 4. 恢復按鈕狀態並提示，使用 window.location.assign 確保順利導向
+    btn.disabled = false;
+    btn.innerText = "確認送出訂單";
+
+    // 彈出提示並導向 LINE
+    if (confirm("點擊「確定」將自動開啟 LINE 傳送訂單給店家！")) {
+        window.location.href = lineUrl;
+    }
 });
 </script>
 
