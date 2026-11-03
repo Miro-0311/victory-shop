@@ -552,16 +552,12 @@ ${itemsText}
     btn.disabled = false;
     btn.innerText = "確認送出訂單";
 
-    // 4. 使用更安全的開啟方式，並在被阻擋時直接提供連結
-    try {
-        var win = window.open(lineUrl, '_blank');
-        if (!win) {
-            window.location.href = lineUrl;
-        }
-    } catch (e) {
+    // 4. 加上清楚的指引提示框
+    if (confirm("即將開啟 LINE！請在接下來的畫面上選擇「膳工坊官方帳號」或「本聊天室」將訂單傳送給我們喔！")) {
         window.location.href = lineUrl;
     }
-});</script>
+});
+</script>
 
 </body>
 </html>
