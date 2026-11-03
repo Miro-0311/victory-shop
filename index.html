@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>屏東勝利之家-膳工坊產品線上訂購</title>
+    <script charset="utf-8" src="https://static.line-scdn.co/liff/edge/2/sdk.js"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #f9f6f0; color: #333; margin: 0; padding: 15px; }
+        .container { max-width: 500px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        h2 { text-align: center; color: #4a3525; margin-top: 0; margin-bottom: 5px; }
+        .subtitle { text-align: center; font-size: 14px; color: #7d6b5d; margin-bottom: 15px; }
+        .notice { background: #fff8f0; border: 1px dashed #d4a373; padding: 10px 12px; border-radius: 8px; font-size: 13px; color: #7f5539; margin-bottom: 15px; line-height: 1.6; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 6px; font-size: 14px; color: #5c4033; }
+        input[type="text"], input[type="tel"], input[type="date"], select, textarea { width: 100%; padding: 10px; border: 1px solid #dcd6cd; border-radius: 8px; font-size: 15px; box-sizing: border-box; }
+        .section-title { font-weight: bold; color: #5c4033; margin: 25px 0 12px 0; border-bottom: 2px solid #eae3d9; padding-bottom: 6px; font-size: 16px; }
+        .product-card { background: #fdfbf7; border: 1px solid #eae3d9; padding: 12px; border-radius: 8px; margin-bottom: 12px; }
+        .product-top { display: flex; justify-content: space-between; align-items: center; }
+        .product-name-btn { background: none; border: none; padding: 0; font-weight: bold; font-size: 15px; color: #8b5a2b; cursor: pointer; text-decoration: underline; text-align: left; line-height: 1.4; }
+        .product-name-btn:hover { color: #5c4033; }
+        .product-price { color: #b2533e; font-size: 13px; font-weight: bold; margin-top: 4px; }
+        .product-card input[type="number"] { width: 65px; text-align: center; padding: 6px; border: 1px solid #dcd6cd; border-radius: 6px; font-size: 16px; background: #fff; }
+        .product-flavor-select { margin-top: 8px; }
+        .product-flavor-select select { font-size: 13px; padding: 8px; background: #fff; width: 100%; border-radius: 6px; border: 1px solid #dcd6cd; }
+        #addressGroup { display: none; background: #fdf7f2; padding: 12px; border-radius: 8px; border: 1px solid #e6d5c3; margin-top: -5px; margin-bottom: 15px; }
+        .summary-box { background: #f4f1ea; padding: 14px; border-radius: 8px; margin-top: 18px; font-size: 14px; }
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
+        .summary-total { font-weight: bold; font-size: 16px; color: #b2533e; border-top: 1px solid #dcd6cd; padding-top: 8px; margin-top: 6px; }
+        .submit-btn { background-color: #6b8e23; color: white; border: none; width: 100%; padding: 14px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 18px; }
+        .submit-btn:active { background-color: #55731b; }
+
+        /* Modal 彈跳大圖視窗 */
+        #imageModal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); justify-content: center; align-items: center; flex-direction: column; padding: 20px; box-sizing: border-box; }
+        .modal-content { max-width: 90%; max-height: 75%; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); object-fit: contain; }
+        .modal-caption { color: #fff; margin-top: 12px; font-size: 16px; font-weight: bold; text-align: center; line-height: 1.4; }
+        .close-modal { position: absolute; top: 15px; right: 20px; color: #fff; font-size: 36px; font-weight: bold; cursor: pointer; line-height: 1; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🍪 膳工坊手作點心</h2>
+    <div class="subtitle">屏東基督教勝利之家庇護工場</div>
+
+    <div class="notice">
+        <b>💡 運費說明：</b><br>
+        • <b>常溫商品</b>：滿 $3,000 免運（未滿運費 $180）。含蛋捲、點心、磅蛋糕。<br>
+        • <b>冷凍商品</b>：滿 $3,500 免運（未滿運費 $290）。僅厚片吐司系列。<br>
+        • <b>勝利之家自取</b>：免運費（屏東市大連路19號）。<br>
+        <i>⚠️ 不同溫層商品將分單計算運費。</i>
+    </div>
+
+    <form id="orderForm">
+        <div class="form-group">
+            <label>訂購人姓名</label>
+            <input type="text" id="customerName" required placeholder="請輸入您的大名">
+        </div>
+
+        <div class="form-group">
+            <label>連絡電話</label>
+            <input type="tel" id="customerPhone" required placeholder="0912-345678">
+        </div>
+
+        <div class="form-group">
+            <label for="deliveryMethod">選擇取貨與運送方式</label>
+            <select id="deliveryMethod">
+                <option value="勝利之家自取">🏠 勝利之家自取 (免運費)</option>
+                <option value="常溫宅配">📦 常溫配送 (滿3000免運，未滿$180)</option>
+                <option value="冷凍宅配">❄️ 冷凍配送 (滿3500免運，未滿$290)</option>
+            </select>
+        </div>
+
+        <!-- 預定到期日與取貨時間 -->
+        <div class="form-group">
+            <label for="dueDate">預定到期日（希望到貨/取貨日期） <span style="color:red;">*</span></label>
+            <input type="date" id="dueDate" required>
+        </div>
+
+        <div class="form-group">
+            <label for="pickupTime">取貨/收貨時間時段 <span style="color:red;">*</span></label>
+            <select id="pickupTime" required>
+                <option value="">請選擇時段</option>
+                <option value="上午 (09:00 - 12:00)">上午 (09:00 - 12:00)</option>
+                <option value="下午 (13:30 - 17:00)">下午 (13:30 - 17:00)</option>
+                <option value="不指定時段">不指定時段</option>
+            </select>
+        </div>
+
+        <div class="form-group" id="addressGroup">
+            <label for="customerAddress">收件地址 <span style="color:red;">*</span></label>
+            <input type="text" id="customerAddress" placeholder="請輸入完整的收件地址">
+        </div>
+
+        <!-- 1. 挪威手工蛋捲專區 (常溫) -->
+        <div class="section-title">🍪 挪威手工蛋捲專區（點名稱看照片 🔍）</div>
+
+        <div class="product-card" data-cat="normal">
+            <div class="product-top">
+                <div class="product-info">
+                    <button type="button" class="product-name-btn" onclick="showModal('小勝日禮盒.webp', '挪威手工蛋捲禮盒 (16入)')">挪威手工蛋捲禮盒 (16入) 🔍</button>
+                    <div class="product-price">$500 / 盒</div>
+                </div>
+                <input type="number" class="qty-input" min="0" value="0" data-name="挪威手工蛋捲禮盒(16入)" data-price="500">
+            </div>
+            <div class="product-flavor-select">
+                <select class="flavor-select">
+                    <option value="綜合（4種口味各4支入）">口味：綜合（4種口味各4支入）</option>
+                    <option value="原味 16支入">口味：原味 16支入</option>
+                    <option value="伯爵紅茶 16支入">口味：伯爵紅茶 16支入</option>
+                    <option value="咖啡 16支入">口味：咖啡 16支入</option>
+                    <option value="芝麻 16支入">口味：芝麻 16支入</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="product-card" data-cat="normal">
+            <div class="product-top">
+                <div class="product-info">
+                    <button type="button" class="product-name-btn" onclick="showModal('Mini太陽餅禮盒組〖8入〗.webp', '挪威手工蛋捲【罐】')">挪威手工蛋捲【罐】 🔍</button>
+                    <div class="product-price">$250 / 罐</div>
+                </div>
+                <input type="number" class="qty-input" min="0" value="0" data-name="挪威手工蛋捲(罐)" data-price="250">
+            </div>
+            <div class="product-flavor-select">
+                <select class="flavor-select">
+                    <option value="原味">口味：原味</option>
+                    <option value="伯爵紅茶">口味：伯爵紅茶</option>
+                    <option value="咖啡">口味：咖啡</option>
+                    <option value="芝麻">口味：芝麻</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- 2. 常溫禮盒與點心系列 (常溫) -->
+        <div class="section-title">🎁 常溫禮盒與點心系列（點名稱看照片 🔍）</div>
+
+        <div class="product-card" data-cat="normal">
+            <div class="product-top">
+                <div class="product-info">
+                    <button type="button" class="product-name-btn" onclick="showModal('牛軋餅【16片】.webp', '牛軋餅禮盒 (16片)')">牛軋餅禮盒 (16片) 🔍</button>
+                    <div class="product-price">$220 / 盒</div>
+                </div>
+                <input type="number" class="qty-input" min="0" value="0" data-name="牛軋餅禮盒(16片)" data-price="220">
+            </div>
+            <div class="product-flavor-select">
+                <select class="flavor-select">
+                    <option value="青蔥風味">口味：青蔥風味</option>
+                    <option value="麥穗風味">口味：麥穗風味</option>
+                    <option value="綜合">口味：綜合</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="product-card" data-cat="normal">
+            <div class="product-top">
+                <div class="product-info">
+                    <button type="button" class="product-name-btn" onclick="showModal('花生牛軋糖.webp', '花生牛軋糖 (300g)')">花生牛軋糖 (300g) 🔍</button>
+                    <div class="product-price">$350 / 包</div>
+                </div>
+                <input type="number" class="qty-input" min="0" value="0" data-name="花生牛軋糖300g" data-price="350">
+            </div>
+        </div>
+
+        <div class="product-card" data-cat="normal">
+            <div class="product-top">
+                <div class="product-info">
+                    <button type="button" class="product-name-btn" onclick="showModal('牛軋餅【16片】_2.webp', '雪花餅 (300g)')">雪花餅 (300g) 🔍</button>
+                    <div class="product-price">$350 / 包</div>
+                </div>
+                <input type="number" class="qty-input" min="0" value="0" data-name="雪花餅300g" data-price="350">
+            </div>
+        </div>
+
+        <div class="product-card" data-cat="normal">
+            <div class="product-top">
+                <div class="product-info">
+                    <button type="button" class="product-name-btn" onclick="showModal('南棗核桃糕.webp', '南棗核桃糕 (300g)')">南棗核桃糕 (300g) 🔍</button>
+                    <div class="product-price">$390 / 包</div>
+                </div>
+                <input type="number" class="qty-input" min="0" value="0" data-name="南棗核桃糕300g" data-price="390">
+            </div>
+        </div>
+
+        <div class="product-card" data-cat="normal">
+            <div class="product-top">
+                <div class="product-info">
+                    <button type="button" class="product-name-btn" onclick="showModal('小勝日禮盒.webp', '小勝日禮盒 (mini太陽餅)')">小勝日禮盒 (mini太陽餅) 🔍</button>
+                    <div class="product-price">$360 / 盒</div>
+                </div>
+                <input type="number" class="qty-input" min="0" value="0" data-name="小勝日禮盒" data-price="360">
+            </div>
+        </div>
+
+        <!-- 香橙檸檬磅蛋糕 (常溫商品) -->
+        <div class="product-card" data-cat="normal">
+            <div class="product-top">
+                <div class="product-info">
+                    <button type="button" class="product-name-btn" onclick="showModal('香橙檸檬磅蛋糕.webp', '香橙檸檬磅蛋糕 (分享裝 520g)')">香橙檸檬磅蛋糕 (分享裝 520g) 🔍</button>
+                    <div class="product-price">$350 / 條</div>
+                </div>
+                <input type="number" class="qty-input" min="0" value="0" data-name="香橙檸檬磅蛋糕(分享裝520g)" data-price="350">
+            </div>
+        </div>
+
+        <div class="product-card" data-cat="normal">
+            <div class="product-top">
+                <div class="product-info">
+                    <button type="button" class="product-name-btn" onclick="showModal('香橙檸檬磅蛋糕_2.webp', '香橙檸檬磅蛋糕 (獨享裝 180g)')">香橙檸檬磅蛋糕 (獨享裝 180g) 🔍</button>
+                    <div class="product-price">$180 / 條</div>
+                </div>
+                <input type="number" class="qty-input" min="0" value="0" data-name="香橙檸檬磅蛋糕(獨享裝180g)" data-price="180">
+            </div>
+        </div>
+
+        <!-- 3. 低溫冷凍厚片吐司系列 (冷凍宅配) -->
+        <div class="section-title">🍞 低溫冷凍厚片吐司系列（點名稱看照片 🔍）</div>
+
+        <div class="product-card" data-cat="cold">
+            <div class="product-top">
+                <div class="product-info">
+                    <button type="button" class="product-name-btn" onclick="showModal('花生熔岩厚片吐司.webp', '花生熔岩厚片')">花生熔岩厚片 🔍</button>
+                    <div class="product-price">$25 / 片</div>
+                </div>
+                <input type="number" class="qty-input" min="0" value="0" data-name="花生熔岩厚片" data-price="25">
+            </div>
+        </div>
+
+        <div class="product-card" data-cat="cold">
+            <div class="product-top">
+                <div class="product-info">
+                    <button type="button" class="product-name-btn" onclick="showModal('香濃可可厚片吐司.webp', '香濃可可厚片')">香濃可可厚片 🔍</button>
+                    <div class="product-price">$25 / 片</div>
+                </div>
+                <input type="number" class="qty-input" min="0" value="0" data-name="香濃可可厚片" data-price="25">
+            </div>
+        </div>
+
+        <div class="product-card" data-cat="cold">
+            <div class="product-top">
+                <div class="product-info">
+                    <button type="button" class="product-name-btn" onclick="showModal('香濃可可厚片吐司_2.webp', '經典奶酥厚片')">經典奶酥厚片 🔍</button>
+                    <div class="product-price">$30 / 片</div>
+                </div>
+                <input type="number" class="qty-input" min="0" value="0" data-name="經典奶酥厚片" data-price="30">
+            </div>
+        </div>
+
+        <div class="product-card" data-cat="cold">
+            <div class="product-top">
+                <div class="product-info">
+                    <button type="button" class="product-name-btn" onclick="showModal('火腿乳酪厚片吐司.webp', '義式蒜香厚片')">義式蒜香厚片 🔍</button>
+                    <div class="product-price">$30 / 片</div>
+                </div>
+                <input type="number" class="qty-input" min="0" value="0" data-name="義式蒜香厚片" data-price="30">
+            </div>
+        </div>
+
+        <div class="product-card" data-cat="cold">
+            <div class="product-top">
+                <div class="product-info">
+                    <button type="button" class="product-name-btn" onclick="showModal('伯爵紅茶奶酥厚片吐司.webp', '伯爵紅茶奶酥厚片')">伯爵紅茶奶酥厚片 🔍</button>
+                    <div class="product-price">$30 / 片</div>
+                </div>
+                <input type="number" class="qty-input" min="0" value="0" data-name="伯爵紅茶奶酥厚片" data-price="30">
+            </div>
+        </div>
+
+        <div class="product-card" data-cat="cold">
+            <div class="product-top">
+                <div class="product-info">
+                    <button type="button" class="product-name-btn" onclick="showModal('伯爵紅茶奶酥厚片吐司_2.webp', '夏威夷厚片')">夏威夷厚片 🔍</button>
+                    <div class="product-price">$40 / 片</div>
+                </div>
+                <input type="number" class="qty-input" min="0" value="0" data-name="夏威夷厚片" data-price="40">
+            </div>
+        </div>
+
+        <div class="product-card" data-cat="cold">
+            <div class="product-top">
+                <div class="product-info">
+                    <button type="button" class="product-name-btn" onclick="showModal('火腿乳酪厚片吐司.webp', '火腿乳酪厚片')">火腿乳酪厚片 🔍</button>
+                    <div class="product-price">$45 / 片</div>
+                </div>
+                <input type="number" class="qty-input" min="0" value="0" data-name="火腿乳酪厚片" data-price="45">
+            </div>
+        </div>
+
+        <div class="product-card" data-cat="cold">
+            <div class="product-top">
+                <div class="product-info">
+                    <button type="button" class="product-name-btn" onclick="showModal('火腿乳酪厚片吐司_2.webp', '燻雞乳酪厚片')">燻雞乳酪厚片 🔍</button>
+                    <div class="product-price">$45 / 片</div>
+                </div>
+                <input type="number" class="qty-input" min="0" value="0" data-name="燻雞乳酪厚片" data-price="45">
+            </div>
+        </div>
+
+        <div class="product-card" data-cat="cold">
+            <div class="product-top">
+                <div class="product-info">
+                    <button type="button" class="product-name-btn" onclick="showModal('伯爵紅茶奶酥厚片吐司.webp', '養生堅果厚片')">養生堅果厚片 🔍</button>
+                    <div class="product-price">$50 / 片</div>
+                </div>
+                <input type="number" class="qty-input" min="0" value="0" data-name="養生堅果厚片" data-price="50">
+            </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 20px;">
+            <label for="note">其他備註說明</label>
+            <textarea id="note" rows="2" placeholder="如有其他特殊需求請在此註明"></textarea>
+        </div>
+
+        <!-- 金額估算表 -->
+        <div class="summary-box">
+            <div class="summary-row">
+                <span>商品小計：</span>
+                <span id="subtotalText">$0</span>
+            </div>
+            <div class="summary-row">
+                <span>預估運費：</span>
+                <span id="shippingText">$0</span>
+            </div>
+            <div class="summary-row summary-total">
+                <span>總計金額：</span>
+                <span id="grandTotalText">$0</span>
+            </div>
+        </div>
+
+        <button type="submit" class="submit-btn" id="submitBtn">確認送出訂單</button>
+    </form>
+</div>
+
+<!-- Modal 彈跳大圖視窗 -->
+<div id="imageModal" onclick="closeModal()">
+    <span class="close-modal">&times;</span>
+    <img class="modal-content" id="modalImg" alt="商品放大圖">
+    <div class="modal-caption" id="modalCaption"></div>
+</div>
+
+<script>
+    var lineUserId = "";
+
+    window.addEventListener('DOMContentLoaded', function() {
+        setupCalculator();
+        initLiffSafely();
+        setupDeliveryToggle();
+        setMinDate();
+    });
+
+    // 設定預定到期日最小為今天
+    function setMinDate() {
+        var today = new Date().toISOString().split('T')[0];
+        document.getElementById('dueDate').setAttribute('min', today);
+    }
+
+    // 彈跳大圖 Modal 控制
+    function showModal(imgSrc, captionText) {
+        var modal = document.getElementById('imageModal');
+        var modalImg = document.getElementById('modalImg');
+        var caption = document.getElementById('modalCaption');
+        modal.style.display = "flex";
+        modalImg.src = imgSrc;
+        caption.innerText = captionText;
+    }
+
+    function closeModal() {
+        document.getElementById('imageModal').style.display = "none";
+    }
+
+    function setupDeliveryToggle() {
+        var deliverySelect = document.getElementById('deliveryMethod');
+        var addressGroup = document.getElementById('addressGroup');
+        var addressInput = document.getElementById('customerAddress');
+
+        function toggleAddress() {
+            if (deliverySelect.value === '勝利之家自取') {
+                addressGroup.style.display = 'none';
+                addressInput.removeAttribute('required');
+                addressInput.value = '';
+            } else {
+                addressGroup.style.display = 'block';
+                addressInput.setAttribute('required', 'required');
+            }
+            updateSummary();
+        }
+
+        deliverySelect.addEventListener('change', toggleAddress);
+        toggleAddress();
+    }
+
+    function initLiffSafely() {
+        var LIFF_ID = "YOUR_LIFF_ID";
+        if (typeof liff !== 'undefined' && LIFF_ID !== "YOUR_LIFF_ID") {
+            liff.init({ liffId: LIFF_ID }).then(function() {
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                } else {
+                    liff.getProfile().then(function(profile) {
+                        lineUserId = profile.userId;
+                        var nameInput = document.getElementById('customerName');
+                        if (nameInput && !nameInput.value) {
+                            nameInput.value = profile.displayName;
+                        }
+                    });
+                }
+            }).catch(function(err) { console.log(err); });
+        }
+    }
+
+    function setupCalculator() {
+        var qtyInputs = document.querySelectorAll('.qty-input');
+        var deliverySelect = document.getElementById('deliveryMethod');
+
+        qtyInputs.forEach(function(input) {
+            input.addEventListener('input', updateSummary);
+            input.addEventListener('change', updateSummary);
+            input.addEventListener('keyup', updateSummary);
+        });
+
+        if (deliverySelect) {
+            deliverySelect.addEventListener('change', updateSummary);
+        }
+        updateSummary();
+    }
+
+    function updateSummary() {
+        var normalTotal = 0;
+        var coldTotal = 0;
+
+        document.querySelectorAll('.product-card').forEach(function(card) {
+            var input = card.querySelector('.qty-input');
+            if (input) {
+                var qty = parseInt(input.value) || 0;
+                var price = parseInt(input.getAttribute('data-price')) || 0;
+                var cat = card.getAttribute('data-cat');
+
+                if (qty > 0) {
+                    if (cat === 'normal') {
+                        normalTotal += qty * price;
+                    } else if (cat === 'cold') {
+                        coldTotal += qty * price;
+                    }
+                }
+            }
+        });
+
+        var subtotal = normalTotal + coldTotal;
+        var deliveryMethod = document.getElementById('deliveryMethod').value;
+        var shippingFee = 0;
+
+        if (deliveryMethod === '常溫宅配') {
+            if (normalTotal > 0 && normalTotal < 3000) {
+                shippingFee = 180;
+            } else {
+                shippingFee = 0;
+            }
+        } else if (deliveryMethod === '冷凍宅配') {
+            if (coldTotal > 0 && coldTotal < 3500) {
+                shippingFee = 290;
+            } else {
+                shippingFee = 0;
+            }
+        } else if (deliveryMethod === '勝利之家自取') {
+            shippingFee = 0;
+        }
+
+        var grandTotal = subtotal + shippingFee;
+
+        document.getElementById('subtotalText').innerText = '$' + subtotal;
+        document.getElementById('shippingText').innerText = '$' + shippingFee;
+        document.getElementById('grandTotalText').innerText = '$' + grandTotal;
+    }
+
+    document.getElementById('orderForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerText = "訂單送出中...";
+
+        var orderItems = [];
+        var subtotal = 0, normalTotal = 0, coldTotal = 0;
+
+        document.querySelectorAll('.product-card').forEach(function(card) {
+            var input = card.querySelector('.qty-input');
+            if (input) {
+                var qty = parseInt(input.value) || 0;
+                if (qty > 0) {
+                    var baseName = input.getAttribute('data-name');
+                    var price = parseInt(input.getAttribute('data-price')) || 0;
+                    var cat = card.getAttribute('data-cat');
+                    
+                    var flavorSelect = card.querySelector('.flavor-select');
+                    var itemName = baseName;
+                    if (flavorSelect) {
+                        itemName += " (" + flavorSelect.value + ")";
+                    }
+
+                    var itemSubtotal = qty * price;
+                    orderItems.push({ name: itemName, quantity: qty, subtotal: itemSubtotal });
+
+                    subtotal += itemSubtotal;
+                    if (cat === 'normal') normalTotal += itemSubtotal;
+                    if (cat === 'cold') coldTotal += itemSubtotal;
+                }
+            }
+        });
+
+        if (orderItems.length === 0) {
+            alert("請至少選擇一項商品！");
+            btn.disabled = false;
+            btn.innerText = "確認送出訂單";
+            return;
+        }
+
+        var deliveryMethod = document.getElementById('deliveryMethod').value;
+        var shippingAddress = (deliveryMethod === '勝利之家自取') ? '勝利之家自取（無須寄送）' : document.getElementById('customerAddress').value;
+        var shippingFee = 0;
+        if (deliveryMethod === '常溫宅配' && normalTotal < 3000 && normalTotal > 0) shippingFee = 180;
+        if (deliveryMethod === '冷凍宅配' && coldTotal < 3500 && coldTotal > 0) shippingFee = 290;
+
+        var orderData = {
+            lineUserId: lineUserId,
+            customerName: document.getElementById('customerName').value,
+            customerPhone: document.getElementById('customerPhone').value,
+            deliveryMethod: deliveryMethod,
+            dueDate: document.getElementById('dueDate').value,
+            pickupTime: document.getElementById('pickupTime').value,
+            shippingAddress: shippingAddress,
+            items: orderItems,
+            subtotal: subtotal,
+            shippingFee: shippingFee,
+            totalAmount: subtotal + shippingFee,
+            note: document.getElementById('note').value,
+            orderTime: new Date().toISOString()
+        };
+
+        var MAKE_WEBHOOK_URL = "https://hook.eu1.make.com/YOUR_WEBHOOK_URL";
+
+        fetch(MAKE_WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(orderData)
+        })
+        .then(function(res) {
+            if (res.ok) {
+                alert("🎉 訂單已成功送出！");
+                if (typeof liff !== 'undefined' && liff.closeWindow) liff.closeWindow();
+            } else {
+                throw new Error();
+            }
+        })
+        .catch(function() {
+            alert("送出失敗，請稍後再試！");
+            btn.disabled = false;
+            btn.innerText = "確認送出訂單";
+        });
+    });
+</script>
+
+</body>
+</html>
