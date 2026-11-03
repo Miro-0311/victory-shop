@@ -327,8 +327,15 @@
             </div>
         </div>
 
+        <!-- 💡 貼心提醒說明 -->
+        <div style="background: #fdf7f2; border: 1px dashed #d4a373; padding: 10px; border-radius: 8px; font-size: 13px; color: #7f5539; margin-top: 15px; text-align: center; line-height: 1.5;">
+            💡 <b>貼心提醒：</b>點擊下方按鈕後將跳轉至 LINE，請在清單中選擇<b>本官方帳號</b>傳送訂單明細即完成訂購！
+        </div>
+
+        <!-- 💡 送出按鈕 -->
         <button type="submit" class="submit-btn" id="submitBtn">確認送出訂單</button>
-    </form>
+
+    </form> <!-- 👈 表單在這裡結束 -->
 </div>
 
 <!-- Modal 彈跳大圖視窗 -->
@@ -473,60 +480,60 @@
     }
 
     document.getElementById('orderForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    var btn = document.getElementById('submitBtn');
-    btn.disabled = true;
-    btn.innerText = "訂單處理中...";
+        e.preventDefault();
+        var btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerText = "訂單處理中...";
 
-    var orderItems = [];
-    var subtotal = 0, normalTotal = 0, coldTotal = 0;
+        var orderItems = [];
+        var subtotal = 0, normalTotal = 0, coldTotal = 0;
 
-    document.querySelectorAll('.product-card').forEach(function(card) {
-        var input = card.querySelector('.qty-input');
-        if (input) {
-            var qty = parseInt(input.value) || 0;
-            if (qty > 0) {
-                var baseName = input.getAttribute('data-name');
-                var price = parseInt(input.getAttribute('data-price')) || 0;
-                var cat = card.getAttribute('data-cat');
-                
-                var flavorSelect = card.querySelector('.flavor-select');
-                var itemName = baseName;
-                if (flavorSelect) {
-                    itemName += " (" + flavorSelect.value + ")";
+        document.querySelectorAll('.product-card').forEach(function(card) {
+            var input = card.querySelector('.qty-input');
+            if (input) {
+                var qty = parseInt(input.value) || 0;
+                if (qty > 0) {
+                    var baseName = input.getAttribute('data-name');
+                    var price = parseInt(input.getAttribute('data-price')) || 0;
+                    var cat = card.getAttribute('data-cat');
+                    
+                    var flavorSelect = card.querySelector('.flavor-select');
+                    var itemName = baseName;
+                    if (flavorSelect) {
+                        itemName += " (" + flavorSelect.value + ")";
+                    }
+
+                    var itemSubtotal = qty * price;
+                    orderItems.push({ name: itemName, quantity: qty, subtotal: itemSubtotal });
+
+                    subtotal += itemSubtotal;
+                    if (cat === 'normal') normalTotal += itemSubtotal;
+                    if (cat === 'cold') coldTotal += itemSubtotal;
                 }
-
-                var itemSubtotal = qty * price;
-                orderItems.push({ name: itemName, quantity: qty, subtotal: itemSubtotal });
-
-                subtotal += itemSubtotal;
-                if (cat === 'normal') normalTotal += itemSubtotal;
-                if (cat === 'cold') coldTotal += itemSubtotal;
             }
+        });
+
+        if (orderItems.length === 0) {
+            alert("請至少選擇一項商品！");
+            btn.disabled = false;
+            btn.innerText = "確認送出訂單";
+            return;
         }
-    });
 
-    if (orderItems.length === 0) {
-        alert("請至少選擇一項商品！");
-        btn.disabled = false;
-        btn.innerText = "確認送出訂單";
-        return;
-    }
+        var deliveryMethod = document.getElementById('deliveryMethod').value;
+        var shippingAddress = (deliveryMethod === '勝利之家自取') ? '勝利之家自取（無須寄送）' : document.getElementById('customerAddress').value;
+        var shippingFee = 0;
+        if (deliveryMethod === '常溫宅配' && normalTotal < 3000 && normalTotal > 0) shippingFee = 180;
+        if (deliveryMethod === '冷凍宅配' && coldTotal < 3500 && coldTotal > 0) shippingFee = 290;
+        var totalAmount = subtotal + shippingFee;
 
-    var deliveryMethod = document.getElementById('deliveryMethod').value;
-    var shippingAddress = (deliveryMethod === '勝利之家自取') ? '勝利之家自取（無須寄送）' : document.getElementById('customerAddress').value;
-    var shippingFee = 0;
-    if (deliveryMethod === '常溫宅配' && normalTotal < 3000 && normalTotal > 0) shippingFee = 180;
-    if (deliveryMethod === '冷凍宅配' && coldTotal < 3500 && coldTotal > 0) shippingFee = 290;
-    var totalAmount = subtotal + shippingFee;
+        // 1. 組裝商品明細文字
+        var itemsText = orderItems.map(function(item) {
+            return "▪ " + item.name + " x " + item.quantity + " ($" + item.subtotal + ")";
+        }).join("\n");
 
-    // 1. 組裝商品明細文字
-    var itemsText = orderItems.map(function(item) {
-        return "▪ " + item.name + " x " + item.quantity + " ($" + item.subtotal + ")";
-    }).join("\n");
-
-    // 2. 組合要發送到 LINE 的完整訂單訊息
-    var message = 
+        // 2. 組合要發送到 LINE 的完整訂單訊息
+        var message = 
 `【膳工坊新訂單通知】
 --------------------
 👤 姓名：${document.getElementById('customerName').value}
@@ -545,18 +552,16 @@ ${itemsText}
 --------------------
 請幫我確認訂單，謝謝！`;
 
-// 3. 進行 URL 編碼並導向 LINE 專用跳轉連結
-    var encodedMessage = encodeURIComponent(message);
-    var lineUrl = `https://line.me/R/msg/text/?${encodedMessage}`;
+        // 3. 進行 URL 編碼並導向 LINE 專用跳轉連結
+        var encodedMessage = encodeURIComponent(message);
+        var lineUrl = `https://line.me/R/msg/text/?${encodedMessage}`;
 
-    btn.disabled = false;
-    btn.innerText = "確認送出訂單";
+        btn.disabled = false;
+        btn.innerText = "確認送出訂單";
 
-    // 4. 加上清楚的指引提示框
-    if (confirm("即將開啟 LINE！請在接下來的畫面上選擇「膳工坊官方帳號」或「本聊天室」將訂單傳送給我們喔！")) {
+        // 4. 直接跳轉至 LINE 應用程式
         window.location.href = lineUrl;
-    }
-});
+    });
 </script>
 
 </body>
