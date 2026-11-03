@@ -483,7 +483,7 @@
         e.preventDefault();
         var btn = document.getElementById('submitBtn');
         btn.disabled = true;
-        btn.innerText = "訂單處理中...";
+        btn.innerText = "訂單傳送中...";
 
         var orderItems = [];
         var subtotal = 0, normalTotal = 0, coldTotal = 0;
@@ -527,40 +527,44 @@
         if (deliveryMethod === '冷凍宅配' && coldTotal < 3500 && coldTotal > 0) shippingFee = 290;
         var totalAmount = subtotal + shippingFee;
 
-        // 1. 組裝商品明細文字
         var itemsText = orderItems.map(function(item) {
-            return "▪ " + item.name + " x " + item.quantity + " ($" + item.subtotal + ")";
-        }).join("\n");
+            return item.name + " x " + item.quantity + " ($" + item.subtotal + ")";
+        }).join("；");
 
-        // 2. 組合要發送到 LINE 的完整訂單訊息
-        var message = 
-`【膳工坊新訂單通知】
---------------------
-👤 姓名：${document.getElementById('customerName').value}
-📞 電話：${document.getElementById('customerPhone').value}
-🚚 取貨方式：${deliveryMethod}
-🏠 地址/備註：${shippingAddress}
-📅 預定日期：${document.getElementById('dueDate').value} (${document.getElementById('pickupTime').value})
---------------------
-🛒 訂單明細：
-${itemsText}
---------------------
-💰 商品小計：$${subtotal}
-📦 運費：$${shippingFee}
-💵 總金額：$${totalAmount}
-📝 備註：${document.getElementById('note').value || '無'}
---------------------
-請幫我確認訂單，謝謝！`;
+        var formData = {
+            name: document.getElementById('customerName').value,
+            phone: document.getElementById('customerPhone').value,
+            deliveryMethod: deliveryMethod,
+            address: shippingAddress,
+            dueDate: document.getElementById('dueDate').value + " (" + document.getElementById('pickupTime').value + ")",
+            items: itemsText,
+            subtotal: "$" + subtotal,
+            shippingFee: "$" + shippingFee,
+            totalAmount: "$" + totalAmount,
+            note: document.getElementById('note').value || '無'
+        };
 
-        // 3. 進行 URL 編碼並導向 LINE 專用跳轉連結
-        var encodedMessage = encodeURIComponent(message);
-        var lineUrl = `https://line.me/R/msg/text/?${encodedMessage}`;
+        // 💡 請把雙引號裡的網址換成您剛剛部署好的 Apps Script 網址
+        var scriptURL = "https://script.google.com/macros/s/https://script.google.com/macros/s/AKfycbyL1wxNkgHze3Vp2EqWLV49hoacFC2tl59aHRakuV-mXnSA7ntTPY_PO4lVYjeFFGv3Nw/exec/exec";
 
-        btn.disabled = false;
-        btn.innerText = "確認送出訂單";
-
-        // 4. 直接跳轉至 LINE 應用程式
-        window.location.href = lineUrl;
+        fetch(scriptURL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        })
+        .then(function(response) {
+            alert("🎉 訂單已成功送出！感謝您的訂購，我們會盡快為您處理。");
+            document.getElementById('orderForm').reset();
+            btn.disabled = false;
+            btn.innerText = "確認送出訂單";
+            updateSummary();
+        })
+        .catch(function(error) {
+            alert("送出失敗，請稍後再試或直接聯絡店家。");
+            btn.disabled = false;
+            btn.innerText = "確認送出訂單";
+        });
     });
 </script>
 
