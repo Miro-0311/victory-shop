@@ -389,23 +389,23 @@
     }
 
     function initLiffSafely() {
-        var LIFF_ID = "2012378128-9Jj8Pq95"; // 💡 請換成您的真實 LIFF ID
-        if (typeof liff !== 'undefined' && LIFF_ID !== "2012378128-9Jj8Pq95") {
-            liff.init({ liffId: LIFF_ID }).then(function() {
-                if (!liff.isLoggedIn()) {
-                    liff.login();
-                } else {
-                    liff.getProfile().then(function(profile) {
-                        lineUserId = profile.userId;
-                        var nameInput = document.getElementById('customerName');
-                        if (nameInput && !nameInput.value) {
-                            nameInput.value = profile.displayName;
-                        }
-                    });
-                }
-            }).catch(function(err) { console.log(err); });
-        }
+    var LIFF_ID = "2012378128-9Jj8Pq95";
+    if (typeof liff !== 'undefined') { // 👈 改成只要有載入 liff 就執行
+        liff.init({ liffId: LIFF_ID }).then(function() {
+            if (!liff.isLoggedIn()) {
+                liff.login();
+            } else {
+                liff.getProfile().then(function(profile) {
+                    lineUserId = profile.userId;
+                    var nameInput = document.getElementById('customerName');
+                    if (nameInput && !nameInput.value) {
+                        nameInput.value = profile.displayName;
+                    }
+                });
+            }
+        }).catch(function(err) { console.log(err); });
     }
+}
 
     function setupCalculator() {
         var qtyInputs = document.querySelectorAll('.qty-input');
