@@ -326,10 +326,10 @@
             </div>
         </div>
 
-               <!-- 💡 送出按鈕 -->
+        <!-- 💡 送出按鈕 -->
         <button type="submit" class="submit-btn" id="submitBtn">確認送出訂單</button>
 
-    </form> <!-- 👈 表單在這裡結束 -->
+    </form>
 </div>
 
 <!-- Modal 彈跳大圖視窗 -->
@@ -349,13 +349,11 @@
         setMinDate();
     });
 
-    // 設定預定到期日最小為今天
     function setMinDate() {
         var today = new Date().toISOString().split('T')[0];
         document.getElementById('dueDate').setAttribute('min', today);
     }
 
-    // 彈跳大圖 Modal 控制
     function showModal(imgSrc, captionText) {
         var modal = document.getElementById('imageModal');
         var modalImg = document.getElementById('modalImg');
@@ -391,8 +389,8 @@
     }
 
     function initLiffSafely() {
-        var LIFF_ID = "YOUR_LIFF_ID";
-        if (typeof liff !== 'undefined' && LIFF_ID !== "YOUR_LIFF_ID") {
+        var LIFF_ID = "2012378128-9Jj8Pq95"; // 💡 請換成您的真實 LIFF ID
+        if (typeof liff !== 'undefined' && LIFF_ID !== "2012378128-9Jj8Pq95") {
             liff.init({ liffId: LIFF_ID }).then(function() {
                 if (!liff.isLoggedIn()) {
                     liff.login();
@@ -526,6 +524,7 @@
         }).join("；");
 
         var formData = {
+            userId: lineUserId, // 💡 確保這裡把 lineUserId 傳遞給後端
             name: document.getElementById('customerName').value,
             phone: document.getElementById('customerPhone').value,
             deliveryMethod: deliveryMethod,
@@ -538,7 +537,6 @@
             note: document.getElementById('note').value || '無'
         };
 
-        // 💡 請把雙引號裡的網址換成您剛剛部署好的 Apps Script 網址
         var scriptURL = "https://script.google.com/macros/s/AKfycbx-tMvDRbke0ZmWd6AF95cTuxQRfv0V2egdGR9qpAZUMnEuHVI29_EZgjoIqD4HQ5n1Jg/exec";
 
         fetch(scriptURL, {
