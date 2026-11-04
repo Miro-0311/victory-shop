@@ -522,7 +522,12 @@
         var itemsText = orderItems.map(function(item) {
             return item.name + " x " + item.quantity + " ($" + item.subtotal + ")";
         }).join("；");
-
+        
+// 檢查是否成功取得 LINE ID
+if (!lineUserId) {
+    alert("正在讀取您的 LINE 帳號資訊，請稍候 3 秒再點擊送出！");
+    return; // 直接中斷，不送出表單
+}
         var formData = {
             userId: lineUserId, // 💡 確保這裡把 lineUserId 傳遞給後端
             name: document.getElementById('customerName').value,
