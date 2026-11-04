@@ -389,22 +389,27 @@
     }
 
     function initLiffSafely() {
-    var LIFF_ID = "2012378128-9Jj8Pq95";
-    if (typeof liff !== 'undefined') { // 👈 改成只要有載入 liff 就執行
-        liff.init({ liffId: LIFF_ID }).then(function() {
-            if (!liff.isLoggedIn()) {
-                liff.login();
+    // 請確認這裡有填入您真實的 LIFF ID (例如 "200xxxxxxx-xxxxxxxx")
+    liff.init({ liffId: "2012378128-9Jj8Pq95" })
+        .then(() => {
+            if (!liff.isInClient()) {
+                // 如果不是在 LINE 軟體內開啟，可以提示或引導
+                console.log("目前不在 LINE 內部瀏覽器中");
             } else {
-                liff.getProfile().then(function(profile) {
-                    lineUserId = profile.userId;
-                    var nameInput = document.getElementById('customerName');
-                    if (nameInput && !nameInput.value) {
-                        nameInput.value = profile.displayName;
-                    }
-                });
+                // 成功在 LINE 內開啟，開始抓取個人資料！
+                liff.getProfile()
+                    .then(profile => {
+                        lineUserId = profile.userId; // 👈 這行極度重要！把抓到的 ID 存給全域變數
+                        console.log("成功取得 LINE ID:", lineUserId);
+                    })
+                    .catch(err => {
+                        console.error("getProfile 失敗：", err);
+                    });
             }
-        }).catch(function(err) { console.log(err); });
-    }
+        })
+        .catch(err => {
+            console.error("LIFF 初始化失敗：", err);
+        });
 }
 
     function setupCalculator() {
@@ -527,6 +532,10 @@
 if (!lineUserId) {
     alert("正在讀取您的 LINE 帳號資訊，請稍候 3 秒再點擊送出！");
     return; // 直接中斷，不送出表單
+}
+        // 如果因為某些原因沒抓到 LINE ID，先給一個預防性 ID 或提示
+if (!lineUserId) {
+    lineUserId = "U_TEST_USER_ID_123456"; // 測試用暫時 ID，確保不會是空的
 }
         var formData = {
             userId: lineUserId, // 💡 確保這裡把 lineUserId 傳遞給後端
