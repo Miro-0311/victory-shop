@@ -399,15 +399,12 @@
                 } else {
                     liff.getProfile().then(profile => {
                         window.lineUserId = profile.userId;
-                        console.log("成功取得 LINE ID:", window.lineUserId);
                     }).catch(err => {
-                        console.log("取得 Profile 失敗", err);
                         window.lineUserId = "U_FALLBACK_USER";
                     });
                 }
             })
             .catch(err => {
-                console.log("LIFF 初始化失敗", err);
                 window.lineUserId = "U_FALLBACK_USER";
             });
     }
