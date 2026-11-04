@@ -394,18 +394,16 @@
     function initLiffSafely() {
         liff.init({ liffId: "2012378128-9Jj8Pq95" })
             .then(() => {
-                if (!liff.isInClient()) {
-                    window.lineUserId = "U_TEST_PC_USER";
-                } else {
+                if (liff.isInClient()) {
                     liff.getProfile().then(profile => {
                         window.lineUserId = profile.userId;
                     }).catch(err => {
-                        window.lineUserId = "U_FALLBACK_USER";
+                        console.log("取得 Profile 失敗", err);
                     });
                 }
             })
             .catch(err => {
-                window.lineUserId = "U_FALLBACK_USER";
+                console.log("LIFF 初始化失敗", err);
             });
     }
 
@@ -526,7 +524,7 @@
         }).join("；");
         
         var formData = {
-            userId: window.lineUserId || "U_UNKNOWN_USER",
+            userId: window.lineUserId || "",
             name: document.getElementById('customerName').value,
             phone: document.getElementById('customerPhone').value,
             deliveryMethod: deliveryMethod,
