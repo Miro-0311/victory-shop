@@ -92,7 +92,7 @@
             <input type="text" id="customerAddress" placeholder="請輸入完整的收件地址">
         </div>
 
-        <!-- 💳 新增：付款方式選擇 -->
+        <!-- 💳 付款方式選擇 -->
         <div class="form-group">
             <label for="paymentMethod">選擇付款方式 <span style="color:red;">*</span></label>
             <select id="paymentMethod" required>
@@ -101,14 +101,15 @@
             </select>
             <div id="bankInfo" class="bank-info">
                 <b>📌 匯款帳號資訊：</b><br>
-                銀行代碼：013 (國泰世華銀行)<br>
-                帳號：123-456-789012<br>
-                戶名：財團法人屏東縣私立基督教勝利之家<br>
-                <i>（請於送出訂單後，於對話框告知帳號後五碼）</i>
+                銀行：台新銀行 屏東分行<br>
+                銀行代號：812<br>
+                帳號：2030-01-0000993-1<br>
+                戶名：財團法人屏東基督教勝利之家<br>
+                <i>（請於送出訂單後，於對話框告知帳號後五碼以利對帳）</i>
             </div>
         </div>
 
-        <!-- 🎁 新增：優惠代碼 / 折扣券 -->
+        <!-- 🎁 優惠代碼 / 折扣券 -->
         <div class="form-group">
             <label for="promoCode">當月優惠代碼 / 優惠折扣券</label>
             <input type="text" id="promoCode" placeholder="如有優惠代碼請在此輸入（無則免填）">
@@ -348,7 +349,7 @@
             </div>
         </div>
 
-        <!-- 💡 送出按鈕 -->
+        <!-- 送出按鈕 -->
         <button type="submit" class="submit-btn" id="submitBtn">確認送出訂單</button>
 
     </form>
