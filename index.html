@@ -70,7 +70,6 @@
             </select>
         </div>
 
-        <!-- 預定到期日與取貨時間 -->
         <div class="form-group">
             <label for="dueDate">預定到期日（希望到貨/取貨日期） <span style="color:red;">*</span></label>
             <input type="date" id="dueDate" required>
@@ -191,7 +190,6 @@
             </div>
         </div>
 
-        <!-- 香橙檸檬磅蛋糕 (常溫商品) -->
         <div class="product-card" data-cat="normal">
             <div class="product-top">
                 <div class="product-info">
@@ -392,23 +390,22 @@
     }
 
     function initLiffSafely() {
-    liff.init({ liffId: "2012378128-9Jj8Pq95" })
-        .then(() => {
-            if (liff.isInClient()) {
-                // 直接從 ID Token 裡面「瞬間」拿取真實 User ID，不需要等待網路請求
-                const idToken = liff.getDecodedIDToken();
-                if (idToken && idToken.sub) {
-                    window.lineUserId = idToken.sub;
-                    console.log("成功取得真實 LINE ID:", window.lineUserId);
+        liff.init({ liffId: "2012378128-9Jj8Pq95" })
+            .then(() => {
+                if (liff.isInClient()) {
+                    const idToken = liff.getDecodedIDToken();
+                    if (idToken && idToken.sub) {
+                        window.lineUserId = idToken.sub;
+                        console.log("成功取得真實 LINE ID:", window.lineUserId);
+                    }
+                } else {
+                    console.log("目前不在 LINE App 內");
                 }
-            } else {
-                console.log("目前不在 LINE App 內");
-            }
-        })
-        .catch(err => {
-            console.log("LIFF 初始化失敗", err);
-        });
-}
+            })
+            .catch(err => {
+                console.log("LIFF 初始化失敗", err);
+            });
+    }
 
     function setupCalculator() {
         var qtyInputs = document.querySelectorAll('.qty-input');
@@ -549,10 +546,28 @@
             body: JSON.stringify(formData)
         })
         .then(function(response) {
+            // 【可選】若您希望送出訂單的同時，在 LINE 聊天室也發送明細，可解開下方註解：
+            /*
+            try {
+                if (typeof liff !== 'undefined' && liff.isInClient()) {
+                    var msg = "📝 【膳工坊】訂單已成功送出！\n\n" +
+                              "👤 訂購人：" + formData.name + "\n" +
+                              "📞 電話：" + formData.phone + "\n" +
+                              "🚚 配送方式：" + formData.deliveryMethod + "\n" +
+                              "📅 預定到貨日：" + formData.dueDate + "\n" +
+                              "🛍️ 訂購品項：" + formData.items + "\n" +
+                              "💰 總金額：" + formData.totalAmount + "\n\n" +
+                              "感謝您的訂購，我們會盡快為您處理！";
+                    liff.sendMessages([{ type: 'text', text: msg }]).catch(function(e){});
+                }
+            } catch (err) {}
+            */
+
             alert("🎉 訂單已成功送出！感謝您的訂購，我們會盡快為您處理。");
             document.getElementById('orderForm').reset();
             btn.disabled = false;
             btn.innerText = "確認送出訂單";
+            setupDeliveryToggle();
             updateSummary();
         })
         .catch(function(error) {
@@ -560,6 +575,7 @@
             document.getElementById('orderForm').reset();
             btn.disabled = false;
             btn.innerText = "確認送出訂單";
+            setupDeliveryToggle();
             updateSummary();
         });
     });
