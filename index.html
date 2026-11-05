@@ -391,24 +391,21 @@
         toggleAddress();
     }
 
-   function initLiffSafely() {
-    liff.init({ liffId: "2012378128-9Jj8Pq95" })
-        .then(() => {
-            if (liff.isInClient()) {
-                // 直接從 ID Token 裡面「瞬間」拿取真實 User ID，不需要等待網路請求
-                const idToken = liff.getDecodedIDToken();
-                if (idToken && idToken.sub) {
-                    window.lineUserId = idToken.sub;
-                    console.log("成功取得真實 LINE ID:", window.lineUserId);
+    function initLiffSafely() {
+        liff.init({ liffId: "2012378128-9Jj8Pq95" })
+            .then(function() {
+                if (liff.isInClient()) {
+                    liff.getProfile().then(function(profile) {
+                        window.lineUserId = profile.userId;
+                    }).catch(function(err) {
+                        console.log("取得 Profile 失敗", err);
+                    });
                 }
-            } else {
-                console.log("目前不在 LINE App 內");
-            }
-        })
-        .catch(err => {
-            console.log("LIFF 初始化失敗", err);
-        });
-}
+            })
+            .catch(function(err) {
+                console.log("LIFF 初始化失敗", err);
+            });
+    }
 
     function setupCalculator() {
         var qtyInputs = document.querySelectorAll('.qty-input');
@@ -542,6 +539,7 @@
 
         var scriptURL = "https://script.google.com/macros/s/AKfycbz-ssiRwKCPeHlB-1Myju0cKHF8iQyHDv_cvTREPugGldpCAfm2Z31L3YQdrKRukf6DbA/exec";
 
+        // 先執行資料傳送給 Google Apps Script 試算表
         fetch(scriptURL, {
             method: 'POST',
             mode: 'no-cors',
@@ -549,30 +547,26 @@
             body: JSON.stringify(formData)
         })
         .then(function(response) {
-            // 1. 嘗試在 LINE 聊天室發送訂單明細給顧客/官方帳號
-            if (typeof liff !== 'undefined' && liff.isInClient() && liff.isLoggedIn()) {
-                var messageText = "📝 【膳工坊】訂單已成功送出！\n\n" +
-                                  "👤 訂購人：" + formData.name + "\n" +
-                                  "📞 電話：" + formData.phone + "\n" +
-                                  "🚚 配送方式：" + formData.deliveryMethod + "\n" +
-                                  "📅 預定到期日：" + formData.dueDate + "\n" +
-                                  "🛍️ 訂購品項：" + formData.items + "\n" +
-                                  "💰 總金額：" + formData.totalAmount + "\n\n" +
-                                  "感謝您的訂購，我們會盡快為您處理！";
+            // 嘗試在 LINE 聊天室傳送訊息（即使失敗也不影響試算表寫入）
+            try {
+                if (typeof liff !== 'undefined' && liff.isInClient()) {
+                    var msg = "📝 【膳工坊】訂單已成功送出！\n\n" +
+                              "👤 訂購人：" + formData.name + "\n" +
+                              "📞 電話：" + formData.phone + "\n" +
+                              "🚚 配送方式：" + formData.deliveryMethod + "\n" +
+                              "📅 預定到期日：" + formData.dueDate + "\n" +
+                              "🛍️ 訂購品項：" + formData.items + "\n" +
+                              "💰 總金額：" + formData.totalAmount + "\n\n" +
+                              "感謝您的訂購，我們會盡快為您處理！";
 
-                liff.sendMessages([
-                    {
-                        type: 'text',
-                        text: messageText
-                    }
-                ]).then(function() {
-                    console.log("訂單訊息已成功傳送至聊天室");
-                }).catch(function(err) {
-                    console.log("聊天室訊息傳送跳過或失敗：", err);
-                });
+                    liff.sendMessages([{ type: 'text', text: msg }]).catch(function(e) {
+                        console.log("LIFF 發送訊息失敗（已安全忽略）:", e);
+                    });
+                }
+            } catch (err) {
+                console.log("LIFF 執行異常（已安全忽略）:", err);
             }
 
-            // 2. 原有的表單重置與成功提示（完全保留，不受訊息傳送影響）
             alert("🎉 訂單已成功送出！感謝您的訂購，我們會盡快為您處理。");
             document.getElementById('orderForm').reset();
             btn.disabled = false;
@@ -586,7 +580,7 @@
             btn.innerText = "確認送出訂單";
             updateSummary();
         });
+    });
 </script>
-
 </body>
 </html>
