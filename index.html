@@ -549,6 +549,30 @@
             body: JSON.stringify(formData)
         })
         .then(function(response) {
+            // 1. 嘗試在 LINE 聊天室發送訂單明細給顧客/官方帳號
+            if (typeof liff !== 'undefined' && liff.isInClient() && liff.isLoggedIn()) {
+                var messageText = "📝 【膳工坊】訂單已成功送出！\n\n" +
+                                  "👤 訂購人：" + formData.name + "\n" +
+                                  "📞 電話：" + formData.phone + "\n" +
+                                  "🚚 配送方式：" + formData.deliveryMethod + "\n" +
+                                  "📅 預定到期日：" + formData.dueDate + "\n" +
+                                  "🛍️ 訂購品項：" + formData.items + "\n" +
+                                  "💰 總金額：" + formData.totalAmount + "\n\n" +
+                                  "感謝您的訂購，我們會盡快為您處理！";
+
+                liff.sendMessages([
+                    {
+                        type: 'text',
+                        text: messageText
+                    }
+                ]).then(function() {
+                    console.log("訂單訊息已成功傳送至聊天室");
+                }).catch(function(err) {
+                    console.log("聊天室訊息傳送跳過或失敗：", err);
+                });
+            }
+
+            // 2. 原有的表單重置與成功提示（完全保留，不受訊息傳送影響）
             alert("🎉 訂單已成功送出！感謝您的訂購，我們會盡快為您處理。");
             document.getElementById('orderForm').reset();
             btn.disabled = false;
@@ -562,7 +586,6 @@
             btn.innerText = "確認送出訂單";
             updateSummary();
         });
-    });
 </script>
 
 </body>
