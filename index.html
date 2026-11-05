@@ -392,22 +392,23 @@
     }
 
     function initLiffSafely() {
-        liff.init({ liffId: "2012378128-9Jj8Pq95" })
-            .then(() => {
-                if (!liff.isInClient()) {
-                    window.lineUserId = "U_TEST_PC_USER";
-                } else {
-                    liff.getProfile().then(profile => {
-                        window.lineUserId = profile.userId;
-                    }).catch(err => {
-                        window.lineUserId = "U_FALLBACK_USER";
-                    });
+    liff.init({ liffId: "2012378128-9Jj8Pq95" })
+        .then(() => {
+            if (liff.isInClient()) {
+                // 直接從 ID Token 裡面「瞬間」拿取真實 User ID，不需要等待網路請求
+                const idToken = liff.getDecodedIDToken();
+                if (idToken && idToken.sub) {
+                    window.lineUserId = idToken.sub;
+                    console.log("成功取得真實 LINE ID:", window.lineUserId);
                 }
-            })
-            .catch(err => {
-                window.lineUserId = "U_FALLBACK_USER";
-            });
-    }
+            } else {
+                console.log("目前不在 LINE App 內");
+            }
+        })
+        .catch(err => {
+            console.log("LIFF 初始化失敗", err);
+        });
+}
 
     function setupCalculator() {
         var qtyInputs = document.querySelectorAll('.qty-input');
@@ -526,7 +527,7 @@
         }).join("；");
         
         var formData = {
-            userId: window.lineUserId || "U_UNKNOWN_USER",
+            userId: window.lineUserId || "",
             name: document.getElementById('customerName').value,
             phone: document.getElementById('customerPhone').value,
             deliveryMethod: deliveryMethod,
