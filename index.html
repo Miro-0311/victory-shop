@@ -366,8 +366,6 @@
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
 <script>
-    var lineUserId = "";
-
     window.addEventListener('DOMContentLoaded', function() {
         setupCalculator();
         initLiffSafely();
@@ -376,7 +374,6 @@
         setMinDate();
     });
 
-    // ... 後續的程式碼 ...
     function setMinDate() {
         var today = new Date().toISOString().split('T')[0];
         document.getElementById('dueDate').setAttribute('min', today);
@@ -515,116 +512,113 @@
     }
 
     document.getElementById('orderForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        var btn = document.getElementById('submitBtn');
-        btn.disabled = true;
-        btn.innerText = "訂單傳送中...";
+        e.preventDefault();
+        var btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerText = "訂單傳送中...";
 
-        var userIdValue = "";
-    try {
-        if (typeof liff !== 'undefined' && liff.isInClient()) {
-            const idToken = liff.getDecodedIDToken();
-            if (idToken && idToken.sub) {
-                userIdValue = idToken.sub;
-                alert("成功抓到 LINE ID: " + userIdValue); // 測試用彈窗
-            } else {
-                alert("在 LINE 內，但抓不到 ID Token");
-            }
-        } else {
-            alert("目前不在 LINE App 內，故無法取得 LINE ID"); // 如果在電腦測試會跳出這行
-        }
-    } catch (error) {
-        alert("LIFF 抓取發生錯誤: " + error);
-    }
-        var orderItems = [];
-        var subtotal = 0, normalTotal = 0, coldTotal = 0;
+        // 🛡️ 安全取得 LINE ID（帶有 try...catch 保護，失敗自動維持空值）
+        var userIdValue = "";
+        try {
+            if (typeof liff !== 'undefined' && liff.isInClient()) {
+                const idToken = liff.getDecodedIDToken();
+                if (idToken && idToken.sub) {
+                    userIdValue = idToken.sub;
+                }
+            }
+        } catch (error) {
+            console.log("LINE ID 略過抓取，維持空值");
+        }
 
-        document.querySelectorAll('.product-card').forEach(function(card) {
-            var input = card.querySelector('.qty-input');
-            if (input) {
-                var qty = parseInt(input.value) || 0;
-                if (qty > 0) {
-                    var baseName = input.getAttribute('data-name');
-                    var price = parseInt(input.getAttribute('data-price')) || 0;
-                    var cat = card.getAttribute('data-cat');
-                    
-                    var flavorSelect = card.querySelector('.flavor-select');
-                    var itemName = baseName;
-                    if (flavorSelect) {
-                        itemName += " (" + flavorSelect.value + ")";
-                    }
+        var orderItems = [];
+        var subtotal = 0, normalTotal = 0, coldTotal = 0;
 
-                    var itemSubtotal = qty * price;
-                    orderItems.push({ name: itemName, quantity: qty, subtotal: itemSubtotal });
+        document.querySelectorAll('.product-card').forEach(function(card) {
+            var input = card.querySelector('.qty-input');
+            if (input) {
+                var qty = parseInt(input.value) || 0;
+                if (qty > 0) {
+                    var baseName = input.getAttribute('data-name');
+                    var price = parseInt(input.getAttribute('data-price')) || 0;
+                    var cat = card.getAttribute('data-cat');
+                    
+                    var flavorSelect = card.querySelector('.flavor-select');
+                    var itemName = baseName;
+                    if (flavorSelect) {
+                        itemName += " (" + flavorSelect.value + ")";
+                    }
 
-                    subtotal += itemSubtotal;
-                    if (cat === 'normal') normalTotal += itemSubtotal;
-                    if (cat === 'cold') coldTotal += itemSubtotal;
-                }
-            }
-        });
+                    var itemSubtotal = qty * price;
+                    orderItems.push({ name: itemName, quantity: qty, subtotal: itemSubtotal });
 
-        if (orderItems.length === 0) {
-            alert("請至少選擇一項商品！");
-            btn.disabled = false;
-            btn.innerText = "確認送出訂單";
-            return;
-        }
+                    subtotal += itemSubtotal;
+                    if (cat === 'normal') normalTotal += itemSubtotal;
+                    if (cat === 'cold') coldTotal += itemSubtotal;
+                }
+            }
+        });
 
-        var deliveryMethod = document.getElementById('deliveryMethod').value;
-        var shippingAddress = (deliveryMethod === '勝利之家自取') ? '勝利之家自取（無須寄送）' : document.getElementById('customerAddress').value;
-        var shippingFee = 0;
-        if (deliveryMethod === '常溫宅配' && normalTotal < 3000 && normalTotal > 0) shippingFee = 180;
-        if (deliveryMethod === '冷凍宅配' && coldTotal < 3500 && coldTotal > 0) shippingFee = 290;
-        var totalAmount = subtotal + shippingFee;
+        if (orderItems.length === 0) {
+            alert("請至少選擇一項商品！");
+            btn.disabled = false;
+            btn.innerText = "確認送出訂單";
+            return;
+        }
 
-        var itemsText = orderItems.map(function(item) {
-            return item.name + " x " + item.quantity + " ($" + item.subtotal + ")";
-        }).join("；");
-        
-        var formData = {
-            userId: window.lineUserId || "",
-            name: document.getElementById('customerName').value,
-            phone: document.getElementById('customerPhone').value,
-            deliveryMethod: deliveryMethod,
-            address: shippingAddress,
-            paymentMethod: document.getElementById('paymentMethod').value,
-            promoCode: document.getElementById('promoCode').value || '無',
-            dueDate: document.getElementById('dueDate').value + " (" + document.getElementById('pickupTime').value + ")",
-            items: itemsText,
-            subtotal: "$" + subtotal,
-            shippingFee: "$" + shippingFee,
-            totalAmount: "$" + totalAmount,
-            note: document.getElementById('note').value || '無'
-        };
+        var deliveryMethod = document.getElementById('deliveryMethod').value;
+        var shippingAddress = (deliveryMethod === '勝利之家自取') ? '勝利之家自取（無須寄送）' : document.getElementById('customerAddress').value;
+        var shippingFee = 0;
+        if (deliveryMethod === '常溫宅配' && normalTotal < 3000 && normalTotal > 0) shippingFee = 180;
+        if (deliveryMethod === '冷凍宅配' && coldTotal < 3500 && coldTotal > 0) shippingFee = 290;
+        var totalAmount = subtotal + shippingFee;
 
-        var scriptURL = "https://script.google.com/macros/s/AKfycbz-ssiRwKCPeHlB-1Myju0cKHF8iQyHDv_cvTREPugGldpCAfm2Z31L3YQdrKRukf6DbA/exec";
+        var itemsText = orderItems.map(function(item) {
+            return item.name + " x " + item.quantity + " ($" + item.subtotal + ")";
+        }).join("；");
+        
+        var formData = {
+            userId: userIdValue,
+            name: document.getElementById('customerName').value,
+            phone: document.getElementById('customerPhone').value,
+            deliveryMethod: deliveryMethod,
+            address: shippingAddress,
+            paymentMethod: document.getElementById('paymentMethod').value,
+            promoCode: document.getElementById('promoCode').value || '無',
+            dueDate: document.getElementById('dueDate').value + " (" + document.getElementById('pickupTime').value + ")",
+            items: itemsText,
+            subtotal: "$" + subtotal,
+            shippingFee: "$" + shippingFee,
+            totalAmount: "$" + totalAmount,
+            note: document.getElementById('note').value || '無'
+        };
 
-        fetch(scriptURL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
-        })
-        .then(function(response) {
-            alert("🎉 訂單已成功送出！感謝您的訂購，我們會盡快為您處理。");
-            document.getElementById('orderForm').reset();
-            btn.disabled = false;
-            btn.innerText = "確認送出訂單";
-            setupDeliveryToggle();
-            setupPaymentToggle();
-            updateSummary();
-        })
-        .catch(function(error) {
-            alert("🎉 訂單已順利送出！");
-            document.getElementById('orderForm').reset();
-            btn.disabled = false;
-            btn.innerText = "確認送出訂單";
-            setupDeliveryToggle();
-            setupPaymentToggle();
-            updateSummary();
-        });
-    });
+        var scriptURL = "https://script.google.com/macros/s/AKfycbz-ssiRwKCPeHlB-1Myju0cKHF8iQyHDv_cvTREPugGldpCAfm2Z31L3YQdrKRukf6DbA/exec";
+
+        fetch(scriptURL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        })
+        .then(function(response) {
+            alert("🎉 訂單已成功送出！感謝您的訂購，我們會盡快為您處理。");
+            document.getElementById('orderForm').reset();
+            btn.disabled = false;
+            btn.innerText = "確認送出訂單";
+            setupDeliveryToggle();
+            setupPaymentToggle();
+            updateSummary();
+        })
+        .catch(function(error) {
+            alert("🎉 訂單已順利送出！");
+            document.getElementById('orderForm').reset();
+            btn.disabled = false;
+            btn.innerText = "確認送出訂單";
+            setupDeliveryToggle();
+            setupPaymentToggle();
+            updateSummary();
+        });
+    });
 </script>
 
 </body>
