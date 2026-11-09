@@ -519,6 +519,18 @@
         btn.disabled = true;
         btn.innerText = "訂單傳送中...";
 
+        var userIdValue = "";
+        try {
+            if (typeof liff !== 'undefined' && liff.isInClient()) {
+                const idToken = liff.getDecodedIDToken();
+                if (idToken && idToken.sub) {
+                    userIdValue = idToken.sub;
+                }
+            }
+        } catch (error) {
+            console.log("LINE ID 略過抓取，維持空值");
+        }
+
         var orderItems = [];
         var subtotal = 0, normalTotal = 0, coldTotal = 0;
 
