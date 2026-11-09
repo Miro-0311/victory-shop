@@ -520,22 +520,19 @@
         btn.disabled = true;
         btn.innerText = "訂單傳送中...";
 
+        // 🛡️ 安全取得 LINE ID，失敗時自動維持空值，不影響送出
         var userIdValue = "";
-    try {
-        if (typeof liff !== 'undefined' && liff.isInClient()) {
-            const idToken = liff.getDecodedIDToken();
-            if (idToken && idToken.sub) {
-                userIdValue = idToken.sub;
-                alert("成功抓到 LINE ID: " + userIdValue); // 測試用彈窗
-            } else {
-                alert("在 LINE 內，但抓不到 ID Token");
+        try {
+            if (typeof liff !== 'undefined' && liff.isInClient()) {
+                const idToken = liff.getDecodedIDToken();
+                if (idToken && idToken.sub) {
+                    userIdValue = idToken.sub;
+                }
             }
-        } else {
-            alert("目前不在 LINE App 內，故無法取得 LINE ID"); // 如果在電腦測試會跳出這行
+        } catch (error) {
+            console.log("LINE ID 略過抓取，維持空值");
         }
-    } catch (error) {
-        alert("LIFF 抓取發生錯誤: " + error);
-    }
+
         var orderItems = [];
         var subtotal = 0, normalTotal = 0, coldTotal = 0;
 
@@ -583,7 +580,7 @@
         }).join("；");
         
         var formData = {
-            userId: window.lineUserId || "",
+            userId: userIdValue, // 帶入剛剛安全取得的 LINE ID
             name: document.getElementById('customerName').value,
             phone: document.getElementById('customerPhone').value,
             deliveryMethod: deliveryMethod,
@@ -625,7 +622,3 @@
             updateSummary();
         });
     });
-</script>
-
-</body>
-</html>
