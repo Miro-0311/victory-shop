@@ -513,18 +513,12 @@
         document.getElementById('grandTotalText').innerText = '$' + grandTotal;
     }
 
-    // 監聽表單的送出動作
     document.getElementById('orderForm').addEventListener('submit', function(e) {
-        e.preventDefault(); // 阻止網頁預設跳轉
-        
-        // 1. 測試彈窗：檢查當下的 LINE ID 是否成功抓到
-        alert("目前的 LINE ID 是: " + (window.lineUserId || "目前是空白的！"));
-
+        e.preventDefault();
         var btn = document.getElementById('submitBtn');
         btn.disabled = true;
         btn.innerText = "訂單傳送中...";
 
-        // 2. 收集所有勾選的商品與計算金額
         var orderItems = [];
         var subtotal = 0, normalTotal = 0, coldTotal = 0;
 
@@ -562,18 +556,15 @@
 
         var deliveryMethod = document.getElementById('deliveryMethod').value;
         var shippingAddress = (deliveryMethod === '勝利之家自取') ? '勝利之家自取（無須寄送）' : document.getElementById('customerAddress').value;
-        
         var shippingFee = 0;
         if (deliveryMethod === '常溫宅配' && normalTotal < 3000 && normalTotal > 0) shippingFee = 180;
         if (deliveryMethod === '冷凍宅配' && coldTotal < 3500 && coldTotal > 0) shippingFee = 290;
-        
         var totalAmount = subtotal + shippingFee;
 
         var itemsText = orderItems.map(function(item) {
             return item.name + " x " + item.quantity + " ($" + item.subtotal + ")";
         }).join("；");
-
-        // 3. 打包要傳給 Google Apps Script 的完整資料
+        
         var formData = {
             userId: window.lineUserId || "",
             name: document.getElementById('customerName').value,
@@ -581,18 +572,17 @@
             deliveryMethod: deliveryMethod,
             address: shippingAddress,
             paymentMethod: document.getElementById('paymentMethod').value,
-            promoCode: document.getElementById('promoCode').value,
-            dueDate: document.getElementById('dueDate').value,
+            promoCode: document.getElementById('promoCode').value || '無',
+            dueDate: document.getElementById('dueDate').value + " (" + document.getElementById('pickupTime').value + ")",
             items: itemsText,
-            subtotal: subtotal,
-            shippingFee: shippingFee,
-            totalAmount: totalAmount,
-            note: document.getElementById('note').value
+            subtotal: "$" + subtotal,
+            shippingFee: "$" + shippingFee,
+            totalAmount: "$" + totalAmount,
+            note: document.getElementById('note').value || '無'
         };
 
         var scriptURL = "https://script.google.com/macros/s/AKfycbz-ssiRwKCPeHlB-1Myju0cKHF8iQyHDv_cvTREPugGldpCAfm2Z31L3YQdrKRukf6DbA/exec";
 
-        // 4. 用 fetch 把資料送到 GAS 後端
         fetch(scriptURL, {
             method: 'POST',
             mode: 'no-cors',
@@ -618,3 +608,7 @@
             updateSummary();
         });
     });
+</script>
+
+</body>
+</html>
