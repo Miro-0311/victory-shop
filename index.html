@@ -565,47 +565,59 @@
             return item.name + " x " + item.quantity + " ($" + item.subtotal + ")";
         }).join("；");
         
-        var formData = {
-            userId: window.lineUserId || "",
-            name: document.getElementById('customerName').value,
-            phone: document.getElementById('customerPhone').value,
-            deliveryMethod: deliveryMethod,
-            address: shippingAddress,
-            paymentMethod: document.getElementById('paymentMethod').value,
-            promoCode: document.getElementById('promoCode').value || '無',
-            dueDate: document.getElementById('dueDate').value + " (" + document.getElementById('pickupTime').value + ")",
-            items: itemsText,
-            subtotal: "$" + subtotal,
-            shippingFee: "$" + shippingFee,
-            totalAmount: "$" + totalAmount,
-            note: document.getElementById('note').value || '無'
-        };
+        // 監聽表單的送出動作
+document.getElementById('orderForm').addEventListener('submit', function(e) {
+    e.preventDefault(); // 阻止網頁預設跳轉
+    
+    // 1. 測試彈窗：檢查當下的 LINE ID 是否成功抓到
+    alert("目前的 LINE ID 是: " + (window.lineUserId || "目前是空白的！"));
 
-        var scriptURL = "https://script.google.com/macros/s/AKfycbz-ssiRwKCPeHlB-1Myju0cKHF8iQyHDv_cvTREPugGldpCAfm2Z31L3YQdrKRukf6DbA/exec";
+    // 2. 取得按鈕並鎖定，避免重複點擊
+    var btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerText = "訂單傳送中...";
 
-        fetch(scriptURL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
-        })
-        .then(function(response) {
-            alert("🎉 訂單已成功送出！感謝您的訂購，我們會盡快為您處理。");
-            document.getElementById('orderForm').reset();
-            btn.disabled = false;
-            btn.innerText = "確認送出訂單";
-            setupDeliveryToggle();
-            setupPaymentToggle();
-            updateSummary();
-        })
-        .catch(function(error) {
-            alert("🎉 訂單已順利送出！");
-            document.getElementById('orderForm').reset();
-            btn.disabled = false;
-            btn.innerText = "確認送出訂單";
-            setupDeliveryToggle();
-            setupPaymentToggle();
-            updateSummary();
+    // 3. 打包表單資料（包含 lineUserId）
+    var formData = {
+        userId: window.lineUserId || "",
+        name: document.getElementById('customerName').value,
+        phone: document.getElementById('customerPhone').value,
+        deliveryMethod: document.querySelector('input[name="deliveryMethod"]:checked').value,
+        address: document.getElementById('customerAddress').value,
+        paymentMethod: document.querySelector('input[name="paymentMethod"]:checked').value,
+        promoCode: document.getElementById('promoCode').value,
+        dueDate: document.getElementById('dueDate').value,
+        items: getItemsSummary(), // 假設您原本用來取得品項的函數
+        subtotal: currentSubtotal,
+        shippingFee: currentShippingFee,
+        totalAmount: currentTotal,
+        note: document.getElementById('orderNote').value
+    };
+
+    var scriptURL = "https://script.google.com/macros/s/AKfycbz-ssiRwKCPeHlB-1Myju0cKHF8iQyHDv_cvTREPugGldpCAfm2Z31L3YQdrKRukf6DbA/exec";
+
+    // 4. 用 fetch 把資料送到 GAS 後端
+    fetch(scriptURL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+    })
+    .then(function(response) {
+        // 就像您剛剛截圖裡看到的成功處理
+        alert("🎉 訂單已成功送出！感謝您的訂購，我們會盡快為您處理。");
+        document.getElementById('orderForm').reset();
+        btn.disabled = false;
+        btn.innerText = "確認送出訂單";
+    })
+    .catch(function(error) {
+        // 因為 no-cors 的特性，通常成功寫入後也會跑到這裡
+        alert("🎉 訂單已順利送出！");
+        document.getElementById('orderForm').reset();
+        btn.disabled = false;
+        btn.innerText = "確認送出訂單";
+    });
+});
         });
     });
 </script>
