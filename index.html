@@ -366,13 +366,9 @@
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
 <script>
-    // 💡 測試點 A：看整支 script 有沒有成功被讀取
-    alert("測試 A：JS 檔案有成功載入！");
-
     var lineUserId = "";
 
     window.addEventListener('DOMContentLoaded', function() {
-        alert("測試 B：網頁 DOMContentLoaded 載入完成！");
         setupCalculator();
         initLiffSafely();
         setupDeliveryToggle();
